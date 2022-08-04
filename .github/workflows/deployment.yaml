@@ -6,9 +6,7 @@ on:
      - main
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION}}
   REPO_NAME: nest-app-repo-docker-course
-  AWS_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY}}
 
 jobs:
   deploy:
@@ -23,7 +21,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: $AWS_REGION
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to ECR
         id: login-ecr
@@ -31,13 +29,11 @@ jobs:
 
       - name: Build, tag and push image to ECR
         id: build-image
-        env:
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          aws ecr-public get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_REGISTRY
-          docker build -t $REPO_NAME:$IMAGE_TAG .
-          docker tag $REPO_NAME:$IMAGE_TAG $AWS_REGISTRY/$REPO_NAME:$IMAGE_TAG
-          docker push $AWS_REGISTRY/$REPO_NAME:$IMAGE_TAG
+          aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY}}
+          docker build -t $REPO_NAME:${{ github.sha }} .
+          docker tag $REPO_NAME:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY}}/$REPO_NAME:${{ github.sha }}
+          docker push ${{ secrets.AWS_ECR_REGISTRY}}/$REPO_NAME:${{ github.sha }}
 
 
       
