@@ -33,11 +33,18 @@ jobs:
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
           docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push ${{ secrets.AWS_ECR_REGISTRY }}/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::${{ secrets.AWS_ECR_REGISTRY }}/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Download task definition
         run: |
           aws ecs describe-task-definition --task-definition nest-app-repo-docker-course-task \
-          --query taskDefinition > taskdefinition.json
+          --query taskDefinition > task-definition.json
+
+      - name: Read task-definition.json
+        run: cat task-definition.json
+
+      - name: Update task-definition.json
+        run: echo "`jq '.containerDefinitions[0].image="${{ steps.build-image.outputs.image }}"' task-definitions.json`" > task-definition.json
 
       - name: Read task-definition.json
         run: cat task-definition.json
