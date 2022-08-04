@@ -5,6 +5,10 @@ on:
     branches:
      - main
 
+env:
+  ECS_CLUSTER: nest-app-repo-docker-course
+  ECS_SERVICE: nest-app-repo-docker-service
+
 jobs:
   deploy:
     name: Deploy
@@ -48,6 +52,17 @@ jobs:
 
       - name: Read task-definition.json
         run: cat task-definition.json
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: $ECS_SERVICE
+          cluster: $ECS_CLUSTER
+
+      - name: Force redeploy
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --region ${{ secrets.AWS_REGION }} --force-new-deployment
 
 
       
