@@ -34,5 +34,13 @@ jobs:
           docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push ${{ secrets.AWS_ECR_REGISTRY }}/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition nest-app-repo-docker-course-task \
+          --query taskDefinition > taskdefinition.json
+
+      - name: Read task-definition.json
+        run: cat task-definition.json
+
 
       
